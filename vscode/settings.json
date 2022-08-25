@@ -1,0 +1,61 @@
+{
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.colorTheme": "Cobalt2",
+    "terminal.integrated.fontFamily": "Hack Nerd Font Mono",
+    "editor.fontFamily": "Fira Code",
+    "editor.wordWrap": "on",
+    "editor.renderWhitespace": "all",
+    "editor.minimap.enabled": false,
+    "editor.insertSpaces": false,
+    "editor.detectIndentation": false,
+    "editor.fontLigatures": true,
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "git.mergeEditor": false,
+    "vim.easymotion": true,
+    "vim.incsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.useCtrlKeys": true,
+    "vim.hlsearch": true,
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["j", "j"],
+            "after": ["<Esc>"]
+        }
+    ],
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["<leader>", "d"],
+            "after": ["d", "d"]
+        },
+        {
+            "before": ["<C-n>"],
+            "commands": [":nohl"]
+        },
+        {
+            "before": ["K"],
+            "commands": ["lineBreakInsert"],
+            "silent": true
+        },
+        {
+            "before": ["<C-[>"],
+            "after": ["g", "T"]
+        },
+        {
+            "before": ["<C-]>"],
+            "after": ["g", "t"]
+        },
+        {
+            "before": [0, 9],
+            "after": ["$"]
+        }
+    ],
+    "vim.leader": "<space>",
+    "vim.handleKeys": {
+        "<C-a>": false,
+        "<C-f>": false
+    },
+	"liveServer.settings.ChromeDebuggingAttachment": false
+}
