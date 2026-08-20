@@ -15,6 +15,8 @@ brew "fzf"
 brew "gcc"
 # GNU debugger
 brew "gdb"
+# GitHub command-line tool
+brew "gh"
 # Highest-quality GIF encoder based on pngquant
 brew "gifski"
 # Distributed revision control system
