@@ -1,1 +1,58 @@
-export PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH
+# ~/.zshrc — managed by dotfiles (https://github.com/Subaruuuu/dotfiles)
+# 這個檔案是 symlink，實體位於 ~/dotfiles/links/.zshrc.symlink
+
+# ---------------------------------------------------------------- oh-my-zsh --
+export ZSH="$HOME/.oh-my-zsh"
+
+# prompt 由 starship 提供，不使用 oh-my-zsh 內建 theme
+ZSH_THEME=""
+
+plugins=(
+	git
+	zsh-autosuggestions
+	zsh-syntax-highlighting
+)
+
+[ -s "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
+
+# ------------------------------------------------------------------ aliases --
+alias safechrome='open -n -a "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --args --user-data-dir=/tmp/chrome_dev_test --disable-web-security'
+
+alias gitlogger="git log --oneline -20 --graph"
+alias gitcp="git branch --show-current | pbcopy"
+alias gittemp='git commit -m "暫存"'
+
+# --------------------------------------------------------------------- node --
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+
+# ------------------------------------------------------------------- python --
+if command -v pyenv >/dev/null 2>&1; then
+	eval "$(pyenv init -)"
+	eval "$(pyenv virtualenv-init -)"
+fi
+
+# --------------------------------------------------------------------- 其他 --
+# mysql
+[ -d "/opt/homebrew/opt/mysql@8.0/bin" ] && export PATH="$PATH:/opt/homebrew/opt/mysql@8.0/bin"
+
+# golang (gvm)
+[ -s "$HOME/.gvm/scripts/gvm" ] && source "$HOME/.gvm/scripts/gvm"
+
+# fzf key bindings / fuzzy completion
+command -v fzf >/dev/null 2>&1 && eval "$(fzf --zsh)"
+
+# Antigravity IDE
+[ -d "$HOME/.antigravity-ide/antigravity-ide/bin" ] && export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
+
+export PATH="$HOME/.local/bin:$PATH"
+
+# --------------------------------------------------------------------- 語系 --
+# 舊的 config.fish 有設這兩個，目前本機沒設也正常，留著備用
+# export LC_ALL=en_US.UTF-8
+# export LC_CTYPE=en_US.UTF-8
+
+# ------------------------------------------------------------------- prompt --
+# 放最後，確保 starship 的 prompt 不會被其他工具蓋掉
+command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
