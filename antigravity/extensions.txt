@@ -1,0 +1,16 @@
+asvetliakov.vscode-neovim
+eamodio.gitlens
+golang.go
+gyro-uyt.lazy-themes
+llvm-vs-code-extensions.vscode-clangd
+meta.pyrefly
+ms-azuretools.vscode-containers
+ms-azuretools.vscode-docker
+ms-kubernetes-tools.vscode-kubernetes-tools
+ms-python.debugpy
+ms-python.python
+ms-python.vscode-python-envs
+redhat.vscode-yaml
+shopify.ruby-lsp
+wesbos.theme-cobalt2
+why-trv.neovim-statusline
