@@ -1,0 +1,16 @@
+# ~/.gitconfig — managed by dotfiles
+# user.name / user.email 刻意不放進 repo，請在新機器上自行設定：
+#   git config --global user.name  "Your Name"
+#   git config --global user.email "you@example.com"
+
+[core]
+	pager = cat
+	excludesfile = ~/.config/git/ignore
+
+[pager]
+	log = false
+	diff = false
+	branch = false
+
+[init]
+	defaultBranch = main
