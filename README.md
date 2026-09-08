@@ -15,8 +15,19 @@
 在一台全新的 mac 上：
 
 ```sh
-git clone https://github.com/Subaruuuu/dotfiles.git ~/dotfiles
+mkdir -p ~/dotfiles
+curl -fsSL https://github.com/Subaruuuu/dotfiles/archive/refs/heads/master.tar.gz \
+  | tar -xz --strip-components=1 -C ~/dotfiles
 ~/dotfiles/install.sh
+```
+
+這樣拉下來的目錄沒有 `.git`，之後想用 `git pull` 更新的話，裝完後補接上遠端：
+
+```sh
+cd ~/dotfiles
+git init -b master && git remote add origin https://github.com/Subaruuuu/dotfiles.git
+git fetch origin && git reset --mixed origin/master
+git branch -u origin/master master
 ```
 
 跑完之後開一個新的 terminal。最後補上 git 身分（刻意不放進 repo）：
@@ -113,7 +124,7 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
 
 不會動到本機任何東西：`HOME` 指到 `mktemp` 出來的空目錄，`brew` / `chsh` / `defaults` / `killall` / `agy-ide` / `curl` 這些全部換成只記錄呼叫參數的 stub。跑完會列出通過／失敗項目，有失敗就回非 0。
 
-涵蓋範圍：所有 script 的語法、兩個踩過的地雷（見下）、三份 `settings.json` 的 JSONC 合法性、iTerm2 plist 的完整性、`install.sh` 的 `STEPS` 有沒有對應的 script、`symlink.sh` 在乾淨 HOME 上的行為（連結、備份、重跑冪等），以及 `editors.sh` / `brew.sh` / `zsh.sh` 在 stub 底下實際跑一遍。
+涵蓋範圍：所有 script 的語法、兩個踩過的地雷（bash 3.2 的全形字變數名解析、`pipefail` 遇上提早結束的 pipeline）、三份 `settings.json` 的 JSONC 合法性、iTerm2 plist 的完整性、`install.sh` 的 `STEPS` 有沒有對應的 script、`symlink.sh` 在乾淨 HOME 上的行為（連結、備份、重跑冪等），以及 `editors.sh` / `brew.sh` / `zsh.sh` 在 stub 底下實際跑一遍。
 
 沙箱測不到的只有真的要碰網路和系統的部分：`brew bundle` 實際下載、`chsh` 換 shell、`nvm install`。那些要驗證只能開一個乾淨的 macOS 使用者帳號跑 `./install.sh`。
 
@@ -209,18 +220,8 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
   ✓ 真 HOME 的 .zshrc 不是指向這個 repo
 
 總結
-  通過 68 項，全部通過
+  通過 69 項，全部通過
 ```
-
-### 兩個踩過的地雷
-
-`scripts/lib/lint.py` 會掃這兩個，`test.sh` 每次都跑：
-
-1. **bash 3.2 的變數名解析** —— macOS 內建的是 bash 3.2，會把緊接在變數後的多位元組字元併進變數名。`"$step（"` 會被當成變數 `step（`，在 `set -u` 底下直接 unbound variable 爆掉。全形字要嘛放變數前面，要嘛用 `${step}` 把邊界框起來。
-
-2. **`pipefail` + 提早結束的 pipeline** —— `ps -Ao comm= | grep -q foo` 在 `set -o pipefail` 底下永遠回非 0：`grep -q` 找到就結束，`ps` 收到 SIGPIPE，pipefail 就把整條 pipeline 判定為失敗。這個 bug 讓 iTerm2 的「有沒有在執行」偵測永遠回 false。
-
-linter 用 python 而不是 grep 寫，是因為 BSD grep（stock macOS 的 `/usr/bin/grep`）沒有 `-P`。第一版用 `grep -P` 寫的檢查在 script 裡會直接報錯，錯誤又被 `2>&1` 吃掉，結果不管 repo 多爛都回報「乾淨」。`test.sh` 因此有一條 linter 的自我測試，先確認它抓得到已知的壞 pattern，再相信它的結果。
 
 ## 維護
 
