@@ -166,8 +166,6 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
 沙箱測不到的只有真的要碰網路和系統的部分：`brew bundle` 實際下載、`chsh` 換 shell、`nvm install`。那些要驗證只能開一個乾淨的 macOS 使用者帳號跑 `./install.sh`。
 
 ```bash
-❯ bash ./dotfiles/scripts/test.sh
-
 1. 語法
   ✓ bash -n install.sh
   ✓ bash -n _lib.sh
@@ -182,7 +180,9 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
   ✓ bash -n zsh.sh
   ✓ zsh -n .zshrc.symlink
   ✓ zsh -n .zprofile.symlink
-  ✓ python3 -m py_compile iterm2_export.py
+  ✓ python 語法 iterm2_export.py
+  ✓ python 語法 lint.py
+  ✓ python 語法 vscode_profile.py
 
 2. 已知地雷
   ✓ linter 自我測試（抓得到已知的壞 pattern）
@@ -190,6 +190,8 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
 
 3. 設定檔格式
   ✓ vscode/profiles/node/settings.json 是合法 JSONC
+  ✓ vscode/profiles/go/settings.json 是合法 JSONC
+  ✓ vscode/profiles/python/settings.json 是合法 JSONC
   ✓ antigravity/settings.json 是合法 JSONC
   ✓ zed/settings.json 是合法 JSONC
   ✓ iTerm2 plist 通過 plutil -lint
@@ -197,6 +199,10 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
   ✓ iTerm2 plist 不含每次都會變的 NoSync* key
   ✓ Brewfile 沒有 npm 項目
   ✓ Brewfile 有 brew/cask/vscode 項目
+  ✓ vscode/profiles/node/node.code-profile 有 settings 和 extensions
+  ✓ vscode/profiles/go/Go.code-profile 有 settings 和 extensions
+  ✓ vscode/profiles/python/python.code-profile 有 settings 和 extensions
+  ✓ vscode_profile.py 列得出擴充 id
   ✓ extensions.txt 每行都是 publisher.name
 
 4. install.sh 步驟對應
@@ -238,6 +244,11 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
   ✓ 未安裝的擴充會 install
   ✓ CLI 輸出的雜訊行沒被當成擴充 id
   ✓ 找不到 CLI 時正常跳過（不中斷）
+  ✓ Default profile 裝擴充時不帶 --profile
+  ✓ Go profile 裝擴充時帶 --profile Go
+  ✓ python profile 裝擴充時帶 --profile python
+  ✓ 已裝的擴充會 skip（不重裝）
+  ✓ 沙箱裡不會去寫 profile 的 settings.json
 
 8. brew.sh / zsh.sh（stub 底下）
   ✓ brew.sh 回 0
@@ -254,11 +265,14 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
 
 10. 沙箱有沒有外洩到真的 HOME
   ✓ 沒有在真 HOME 產生 .dotfiles-backup
+  ✓ 真 HOME 的 VS Code profile settings 沒被覆蓋
   ✓ 真 HOME 的 .zshrc 不是指向這個 repo
 
 總結
   通過 82 項，全部通過
 ```
+
+項目數不是固定的：第 6 節會依本機狀態走不同分支——iTerm2 開著時是「跳過匯入」那 2 項，沒開時是「實際匯入」那 3 項，所以總數是 82 或 83。
 
 ## 維護
 
