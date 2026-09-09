@@ -47,7 +47,7 @@ link_config_files() {
 # 編輯器的設定檔路徑各自不同，用一張表列出來
 # 格式：<repo 內的相對路徑>|<家目錄底下的絕對路徑>
 EDITOR_SETTINGS=(
-	"vscode/settings.json|$HOME/Library/Application Support/Code/User/settings.json"
+	"vscode/profiles/node/settings.json|$HOME/Library/Application Support/Code/User/settings.json"
 	"antigravity/settings.json|$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
 	"zed/settings.json|$HOME/.config/zed/settings.json"
 )

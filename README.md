@@ -73,13 +73,22 @@ git config --global user.email "you@example.com"
 ├── config/             # 對應 ~/.config/
 │   └── git/ignore
 ├── scripts/
-│   ├── test.sh         # 沙箱測試
-│   └── lib/lint.py     # shell script 地雷掃描
+│   ├── test.sh                  # 沙箱測試
+│   ├── lib/lint.py              # shell script 地雷掃描
+│   └── lib/vscode_profile.py    # 產 .code-profile / 查 profile 目錄
 ├── iterm2/
 │   └── com.googlecode.iterm2.plist
 ├── vscode/
-│   ├── settings.json   # -> ~/Library/Application Support/Code/User/settings.json
-│   └── *.code-profile  # 手動從 VS Code 匯入
+│   └── profiles/       # 一個 profile 一個資料夾
+│       ├── node/       # = Default profile
+│       │   ├── settings.json     # -> ~/Library/Application Support/Code/User/settings.json
+│       │   └── node.code-profile # 手動從 VS Code 匯出／匯入
+│       ├── go/
+│       │   ├── settings.json
+│       │   └── Go.code-profile
+│       └── python/
+│           ├── settings.json
+│           └── python.code-profile
 ├── antigravity/
 │   ├── settings.json   # -> ~/Library/Application Support/Antigravity IDE/User/settings.json
 │   └── extensions.txt  # agy-ide --install-extension 用
@@ -89,9 +98,37 @@ git config --global user.email "you@example.com"
 
 ## 編輯器
 
-三個編輯器的 `settings.json` 都是 symlink 回這個 repo，所以在編輯器裡改設定 = 直接改 repo，不需要另外同步。
+三個編輯器的 `settings.json` 都是 symlink 回這個 repo，所以在編輯器裡改設定 = 直接改 repo，不需要另外同步。VS Code 這邊連過去的是 Default profile，也就是 `vscode/profiles/node/settings.json`。
 
-擴充套件則是兩套機制：VS Code 的寫在 Brewfile 的 `vscode "..."` 由 `brew bundle` 處理；Antigravity 的走 `antigravity/extensions.txt`，因為它不是 Homebrew 認得的編輯器。
+擴充套件有三套機制：
+
+| 對象 | 機制 |
+| --- | --- |
+| VS Code Default profile | Brewfile 的 `vscode "..."`，`brew bundle` 處理 |
+| VS Code 其他 profile | `.code-profile` 裡的清單，`scripts/editors.sh` 用 `code --profile` 裝 |
+| Antigravity | `antigravity/extensions.txt`，它不是 Homebrew 認得的編輯器 |
+
+### VS Code profile
+
+`vscode/profiles/` 一個 profile 一個資料夾，裡面兩份東西：
+
+- `settings.json` —— 純文字，方便 review 和 diff
+- `<名字>.code-profile` —— VS Code 的匯出格式，含 settings + 擴充清單 + snippets + UI 版面狀態，可以直接在 GUI 匯入
+
+`Brewfile` 的 `vscode "..."` **只認得 Default profile**。`brew bundle` 的實作固定跑 `code --list-extensions` / `code --install-extension`，沒有帶 `--profile`；在 Brewfile 寫 `vscode "golang.go", profile: "Go"` 會直接被擋下：
+
+```
+Error: Invalid Brewfile: unknown options([:profile]) for vscode
+```
+
+所以非 Default 的 profile 只能自己來，`scripts/editors.sh` 用 `code --profile <名字> --install-extension`。
+
+`.code-profile` 也沒有 CLI 可以匯出或匯入（`code --help` 只有 `--profile <name>`，那是「用這個 profile 開資料夾」）。GUI 匯出的其實是一份普通 JSON，`scripts/lib/vscode_profile.py` 直接照那個格式產，資料從本機 profile 目錄讀。有兩個地方會踩到：
+
+1. **`displayName` 可能是 `%displayName%`** —— 擴充的 `package.json` 用 NLS 佔位符時，真正的字串在 `package.nls.json` 裡
+2. **`settings.json` 是 CRLF** —— python 預設的 universal newlines 會把它轉成 LF，匯出的內容就跟 GUI 產的那份對不起來，要用 `newline=""` 讀寫
+
+還原時 `.code-profile` 只是給你手動 import 用的備份；`install.sh` 走的是擴充用 CLI 裝、`settings.json` 直接複製進 profile 目錄。profile 目錄的 id 是每台機器隨機產的，所以要先裝擴充（順手把 profile 建出來）才查得到目錄。**VS Code 開著的時候 `editors.sh` 不會寫 `settings.json`**，記憶體裡那份會蓋回去。
 
 Zed 只存 `settings.json`，`~/.config/zed/` 底下的 `prompts/`（sqlite）跟 `conversations/` 是本機狀態，沒有納入。
 
@@ -124,7 +161,7 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
 
 不會動到本機任何東西：`HOME` 指到 `mktemp` 出來的空目錄，`brew` / `chsh` / `defaults` / `killall` / `agy-ide` / `curl` 這些全部換成只記錄呼叫參數的 stub。跑完會列出通過／失敗項目，有失敗就回非 0。
 
-涵蓋範圍：所有 script 的語法、兩個踩過的地雷（bash 3.2 的全形字變數名解析、`pipefail` 遇上提早結束的 pipeline）、三份 `settings.json` 的 JSONC 合法性、iTerm2 plist 的完整性、`install.sh` 的 `STEPS` 有沒有對應的 script、`symlink.sh` 在乾淨 HOME 上的行為（連結、備份、重跑冪等），以及 `editors.sh` / `brew.sh` / `zsh.sh` 在 stub 底下實際跑一遍。
+涵蓋範圍：所有 script 的語法、兩個踩過的地雷（bash 3.2 的全形字變數名解析、`pipefail` 遇上提早結束的 pipeline）、五份 `settings.json` 的 JSONC 合法性、三份 `.code-profile` 有沒有真的含到 settings 和擴充清單、iTerm2 plist 的完整性、`install.sh` 的 `STEPS` 有沒有對應的 script、`symlink.sh` 在乾淨 HOME 上的行為（連結、備份、重跑冪等），以及 `editors.sh` / `brew.sh` / `zsh.sh` 在 stub 底下實際跑一遍。
 
 沙箱測不到的只有真的要碰網路和系統的部分：`brew bundle` 實際下載、`chsh` 換 shell、`nvm install`。那些要驗證只能開一個乾淨的 macOS 使用者帳號跑 `./install.sh`。
 
@@ -152,7 +189,7 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
   ✓ 沒有已知地雷（bash 3.2 全形字 / pipefail SIGPIPE）
 
 3. 設定檔格式
-  ✓ vscode/settings.json 是合法 JSONC
+  ✓ vscode/profiles/node/settings.json 是合法 JSONC
   ✓ antigravity/settings.json 是合法 JSONC
   ✓ zed/settings.json 是合法 JSONC
   ✓ iTerm2 plist 通過 plutil -lint
@@ -220,7 +257,7 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
   ✓ 真 HOME 的 .zshrc 不是指向這個 repo
 
 總結
-  通過 69 項，全部通過
+  通過 82 項，全部通過
 ```
 
 ## 維護
@@ -231,7 +268,7 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
 ~/dotfiles/scripts/dump.sh
 ```
 
-它會更新 `Brewfile`、`iterm2/com.googlecode.iterm2.plist` 和 `antigravity/extensions.txt`，跑完用 `git diff` 檢查。編輯器的 `settings.json` 是 symlink，本來就同步，不在它的處理範圍。
+它會更新 `Brewfile`、`iterm2/com.googlecode.iterm2.plist`、`vscode/profiles/*/`（三個 profile 的 `settings.json` 和 `.code-profile`）和 `antigravity/extensions.txt`，跑完用 `git diff` 檢查。VS Code Default profile 的 `settings.json` 是 symlink，本來就同步。
 
 （`brew bundle dump` 會把 `npm "..."` 一起寫進去，`dump.sh` 會濾掉——node 由 nvm 管，全域套件寫在 `scripts/node.sh` 的 `NPM_PACKAGES`。）
 
@@ -241,4 +278,4 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
 - nvim 設定（獨立 repo，由 `scripts/nvim.sh` clone）
 - Zed 的 `prompts/`、`conversations/`；各編輯器的 `globalStorage` / `workspaceStorage`
 - iTerm2 的 `Custom Color Presets`（見上）
-- `vscode/settings.json` 和 `antigravity/settings.json` 裡的 `vscode-neovim.neovimInitVimPaths.darwin` 是絕對路徑（那個擴充不保證展開 `~`），換使用者名稱要手改
+- `vscode/profiles/node/settings.json` 和 `antigravity/settings.json` 裡的 `vscode-neovim.neovimInitVimPaths.darwin` 是絕對路徑（那個擴充不保證展開 `~`），換使用者名稱要手改

@@ -38,6 +38,25 @@ dump_iterm2() {
 	log_end "iTerm2"
 }
 
+dump_vscode_profiles() {
+	log_start "VS Code profiles"
+
+	local entry name dir export_name
+	for entry in "${VSCODE_PROFILES[@]}"; do
+		IFS='|' read -r name dir export_name <<<"$entry"
+
+		if ! python3 "$VSCODE_PROFILE_LIB" resolve "$name" >/dev/null 2>&1; then
+			log_skip "本機沒有 ${name} profile"
+			continue
+		fi
+
+		python3 "$VSCODE_PROFILE_LIB" dump "$name" "$export_name" \
+			"$DOTFILES/vscode/profiles/$dir"
+	done
+
+	log_end "VS Code profiles"
+}
+
 dump_antigravity_extensions() {
 	export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
 
@@ -56,6 +75,7 @@ dump_antigravity_extensions() {
 
 dump_brewfile
 dump_iterm2
+dump_vscode_profiles
 dump_antigravity_extensions
 
 echo ""

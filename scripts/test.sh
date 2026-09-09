@@ -58,6 +58,12 @@ for cmd in brew chsh defaults killall curl sudo xcode-select mas; do
 	make_stub "${cmd}"
 done
 
+# code 要能回一份「已安裝清單」，才測得出跳過既有擴充的邏輯。
+# --profile 擺在 --list-extensions 前面，所以直接比對整串參數
+make_stub code 'case "$*" in
+  *--list-extensions*) echo "eamodio.gitlens" ;;
+esac'
+
 # agy-ide 要能回一份「已安裝清單」，才測得出跳過既有擴充的邏輯
 make_stub agy-ide 'case "$1" in
   --list-extensions) echo "[createInstance] 這行是雜訊，應該被濾掉"; echo "eamodio.gitlens" ;;
@@ -147,7 +153,10 @@ fi
 
 section "3. 設定檔格式"
 
-for j in vscode/settings.json antigravity/settings.json zed/settings.json; do
+for j in vscode/profiles/node/settings.json \
+         vscode/profiles/go/settings.json \
+         vscode/profiles/python/settings.json \
+         antigravity/settings.json zed/settings.json; do
 	check "${j} 是合法 JSONC" python3 - "${DOTFILES}/${j}" <<'PY'
 import json, re, sys
 s = open(sys.argv[1], encoding="utf-8").read()
@@ -183,6 +192,22 @@ check "Brewfile 有 brew/cask/vscode 項目" bash -c '
 	grep -q "^brew \"" "'"${DOTFILES}"'/Brewfile" &&
 	grep -q "^cask \"" "'"${DOTFILES}"'/Brewfile" &&
 	grep -q "^vscode \"" "'"${DOTFILES}"'/Brewfile"'
+
+# 匯出時漏勾選項的話，.code-profile 會只剩 name + globalState，import 出來是空的
+for prof in node/node go/Go python/python; do
+	check "vscode/profiles/${prof}.code-profile 有 settings 和 extensions" \
+		python3 - "${DOTFILES}/vscode/profiles/${prof}.code-profile" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+assert json.loads(d["settings"])["settings"].strip(), "settings 是空的"
+assert json.loads(d["extensions"]), "extensions 是空的"
+PY
+done
+
+check "vscode_profile.py 列得出擴充 id" bash -c '
+	ids="$(python3 "'"${DOTFILES}"'/scripts/lib/vscode_profile.py" extensions \
+		"'"${DOTFILES}"'/vscode/profiles/go/Go.code-profile")"
+	test -n "${ids}" && ! grep -vE "^[A-Za-z0-9][A-Za-z0-9_-]*\.[A-Za-z0-9]" <<<"${ids}"'
 
 check "extensions.txt 每行都是 publisher.name" bash -c '
 	! grep -vE "^[A-Za-z0-9][A-Za-z0-9_-]*\.[A-Za-z0-9]" "'"${DOTFILES}"'/antigravity/extensions.txt"'
@@ -281,6 +306,20 @@ check "找不到 CLI 時正常跳過（不中斷）" bash -c '
 	grep -q "找不到 agy-ide" "'"${SANDBOX}"'/editors2.log"'
 mv "${STUB_BIN}/agy-ide.hidden" "${STUB_BIN}/agy-ide"
 
+# VS Code 的 profile：Default 不能帶 --profile，其餘一定要帶
+check "Default profile 裝擴充時不帶 --profile" bash -c '
+	grep -q "^code --install-extension anthropic.claude-code --force$" "'"${CALLS}"'"'
+check "Go profile 裝擴充時帶 --profile Go" bash -c '
+	grep -q "^code --profile Go --install-extension golang.go --force$" "'"${CALLS}"'"'
+check "python profile 裝擴充時帶 --profile python" bash -c '
+	grep -q "^code --profile python --install-extension charliermarsh.ruff --force$" "'"${CALLS}"'"'
+check "已裝的擴充會 skip（不重裝）" bash -c '
+	! grep -q "install-extension eamodio.gitlens" "'"${CALLS}"'"'
+check "沙箱裡不會去寫 profile 的 settings.json" bash -c '
+	grep -q "profile 目錄" "'"${SANDBOX}"'/editors.log" ||
+	grep -q "VS Code 正在執行" "'"${SANDBOX}"'/editors.log"'
+
+
 section "8. brew.sh / zsh.sh（stub 底下）"
 
 sandbox "${DOTFILES}/scripts/brew.sh" > "${SANDBOX}/brew.log" 2>&1
@@ -316,6 +355,11 @@ section "10. 沙箱有沒有外洩到真的 HOME"
 
 check "沒有在真 HOME 產生 .dotfiles-backup" bash -c '
 	test ! -e "'"${REAL_HOME}"'/.dotfiles-backup"'
+check "真 HOME 的 VS Code profile settings 沒被覆蓋" bash -c '
+	for d in "'"${REAL_HOME}"'/Library/Application Support/Code/User/profiles"/*/; do
+		[ -f "${d}settings.json" ] || continue
+		! diff -q "${d}settings.json" "'"${DOTFILES}"'/vscode/profiles/node/settings.json" >/dev/null
+	done'
 check "真 HOME 的 .zshrc 不是指向這個 repo" bash -c '
 	test "$(readlink "'"${REAL_HOME}"'/.zshrc" 2>/dev/null)" != "'"${DOTFILES}"'/links/.zshrc.symlink"'
 

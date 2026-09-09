@@ -1,0 +1,63 @@
+{
+    "workbench.iconTheme": "catppuccin-macchiato",
+
+    "terminal.integrated.fontFamily": "Hack Nerd Font Mono",
+
+    // "editor.fontFamily": "Fira Code",
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.fontWeight": "400",
+    "editor.wordWrap": "on",
+    "editor.renderWhitespace": "all",
+    // "editor.insertSpaces": true,
+	"editor.insertSpaces": false,
+    "editor.minimap.enabled": false,
+    "editor.fontLigatures": true,
+    // "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "editor.lineNumbers": "relative",
+	"editor.tokenColorCustomizations": {
+		"comments": "#02B3FF"
+	},
+
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+
+    "git.mergeEditor": false,
+	"git.openRepositoryInParentFolders": "never",
+
+    "liveServer.settings.ChromeDebuggingAttachment": false,
+	"liveServer.settings.donotShowInfoMsg": true,
+
+    "code-runner.runInTerminal": true,
+    "window.zoomLevel": 2,
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    },
+
+    /* vscode neovim */
+    "vscode-neovim.neovimExecutablePaths.darwin": "/opt/homebrew/bin/nvim",
+    "vscode-neovim.neovimInitVimPaths.darwin": "/Users/oscar/.config/nvim/init.lua",
+    "vscode-neovim.compositeKeys": {
+        "jj": {
+            "command": "vscode-neovim.escape",
+        },
+        "jk": {
+            // Use lua to execute any logic
+            "command": "vscode-neovim.lua",
+            "args": [
+                [
+                    "local code = require('vscode')",
+                    "code.action('vscode-neovim.escape')",
+                    "code.action('workbench.action.files.save')",
+                ],
+            ],
+        },
+    },
+    // "workbench.colorTheme": "Cobalt2",
+
+    // typescript 7 for tsgo
+    "js/ts.experimental.useTsgo": true,
+    "js/ts.tsdk.path": "./node_modules/typescript",
+    "claudeCode.preferredLocation": "panel",
+    "workbench.colorTheme": "Catppuccin Macchiato"
+}
