@@ -11,7 +11,7 @@ brew "fd"
 brew "btop"
 brew "htop"
 brew "docker"
-brew "neofetch"
+brew "fastfetch"
 brew "postgresql@17"
 brew "neovim"
 brew "starship"
@@ -61,7 +61,6 @@ cask "pdf-squeezer"
 cask "pearcleaner"
 cask "pgadmin4"
 cask "postman"
-cask "qbittorrent"
 cask "rectangle"
 cask "slack"
 cask "spotify"
@@ -73,10 +72,6 @@ cask "visual-studio-code"
 cask "clop"
 # Database browser for SQLCipher
 cask "db-browser-for-sqlcipher@nightly"
-# Markdown editor
-cask "mark-text"
-# Minimal browser that protects privacy
-cask "min"
 # Open-source software for live streaming and screen recording
 cask "obs"
 # System monitor for the menu bar
