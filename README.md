@@ -272,8 +272,6 @@ zsh + [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)，prompt 用 [starship](ht
   通過 82 項，全部通過
 ```
 
-項目數不是固定的：第 6 節會依本機狀態走不同分支——iTerm2 開著時是「跳過匯入」那 2 項，沒開時是「實際匯入」那 3 項，所以總數是 82 或 83。
-
 ## 維護
 
 把本機現在的狀態倒回 repo：
