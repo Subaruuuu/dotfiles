@@ -2,7 +2,9 @@
 #
 # 新 macOS 一鍵還原開發環境
 #
-#   git clone https://github.com/Subaruuuu/dotfiles.git ~/dotfiles
+#   mkdir -p ~/dotfiles
+#   curl -fsSL https://github.com/Subaruuuu/dotfiles/archive/refs/heads/master.tar.gz \
+#     | tar -xz --strip-components=1 -C ~/dotfiles
 #   ~/dotfiles/install.sh
 #
 set -euo pipefail
